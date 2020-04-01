@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snek</title>
+</head>
+<body>
+    <script>
+        // Canvas in JS
+        var canvas;
+        var canvasContex;
+
+        //Initializing Var needed
+        var frame_per_second = 15;
+        var gridsize = 30;
+        var head_x = 0;
+        var head_y = 0;
+        var up, down, left, right;
+        var tail = [];
+        var tail_x = [];
+        var tail_y = [];
+        var tail_len = 0;
+
+        var food_x;
+        var food_y;
+        var isEaten;
+        var gameloop;
+
+        window.onload = function(){
+            console.log("Hello World");
+            canvas = document.getElementById('gameCanvas');
+            canvasContex = canvas.getContext('2d');
+
+            // Initialization
+            generateFood();
+
+            document.addEventListener('keydown', function(event){
+            if (event.keyCode == 37){ //Left
+                // alert('Left was pressed');
+                if(!right){
+                    up = down = left = right = false;
+                    left = true;
+                }
+            }
+            else if (event.keyCode == 38){
+                // alert('Up was pressed');
+                if(!down){
+                    up = down = left = right = false;
+                    up = true;
+                }
+            }
+            else if (event.keyCode == 39){
+                // alert('Right was pressed');
+                if(!left){
+                    up = down = left = right = false;
+                    right = true;
+                }
+            }
+            else if (event.keyCode == 40){
+                // alert('Down was pressed');
+                if(!up){
+                    up = down = left = right = false;
+                    down = true;
+
+                }
+            }
+        }, true);
+
+
+            gameloop = setInterval(refresh, 1000/frame_per_second);
+            //drawEverything();
+        }
+
+        function generateFood(){
+            food_x = Math.floor(Math.random() * (canvas.width / gridsize));
+            food_y = Math.floor(Math.random() * (canvas.height / gridsize));
+        }
+
+        function refresh(){
+            console.log("Head: ", head_x, head_y, " Food: ", food_x, food_y, " Tail: ", tail_x.length);
+            console.log("Up:", up, " Left: ", left);
+            for(var i = 0; i < tail_x.length; i++){
+                console.log("Tail ", i, ": ", tail_x[i], tail_y[i]);
+            }
+            //Calculate Position
+            if(up){head_y -= 1;}         
+            else if(down)   head_y += 1;
+            else if(left)   head_x -= 1;
+            else if(right)  head_x += 1;
+            
+            // Boundaries
+            if(head_y < 0){head_y = Math.floor(canvas.height / gridsize);
+            } 
+            if(head_y > (canvas.height / gridsize)) head_y = 0;
+            if(head_x < 0) head_x = Math.floor(canvas.width / gridsize);
+            if(head_x >= (canvas.width / gridsize)) head_x = 0;
+
+            //Colision Detection
+            //Food Colision
+            if(head_x == food_x && head_y == food_y){
+                // Add tail
+                tail_len += 1;
+                
+                generateFood();
+            }
+            for(var i = 0; i < tail_len - 2; i++){
+                if(head_x == tail_x[i] && head_y == tail_y[i]){
+                    clearInterval(gameloop);
+                    console.log("DEAD");
+                }
+            }
+
+            // pop first tail
+            while(tail_x.length > tail_len){
+                tail_x.shift();
+                tail_y.shift();
+            }
+            // add last tail
+            tail_x.push(head_x);
+            tail_y.push(head_y);
+            
+
+            drawEverything();
+        }
+
+        function drawEverything(){
+            // Draw background
+            canvasContex.fillStyle = 'black';
+            canvasContex.fillRect(0, 0, canvas.width, canvas.height);
+
+            //Draw Food
+            canvasContex.fillStyle = 'yellow';
+            canvasContex.fillRect(food_x * gridsize, food_y * gridsize, gridsize, gridsize);
+
+            //Draw Tail
+            for(var i = 0; i < tail_len; i++){
+                canvasContex.fillStyle = 'orange';
+                canvasContex.fillRect(tail_x[i] * gridsize, tail_y[i] * gridsize, gridsize, gridsize);
+            }
+
+            //Draw Head
+            canvasContex.fillStyle = 'red';
+            canvasContex.fillRect(head_x * gridsize, head_y * gridsize, gridsize, gridsize);
+
+        }
+    </script>
+
+
+    <canvas id="gameCanvas" width="800" height="600">
+
+    </canvas>
+    <p>
+        Use Arrow to Control snake :)
+    </p>
+</body>
+</html>
